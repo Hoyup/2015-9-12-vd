@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+<!-- 控制台输出 -->
+<appender name="cmd" class="org.apache.log4j.ConsoleAppender">
+<param name="Target" value="System.out" />
+<layout class="org.apache.log4j.PatternLayout">
+<param name="ConversionPattern" value="%d [%t] %-5p %c %x - %m%n" />
+</layout>
+</appender>
+
+<appender name="allAppender" class="org.apache.log4j.DailyRollingFileAppender">
+<param name="File" value="E:\log/project1/debug.log" />
+<param name="DatePattern" value="'.'yyyy-MM-dd'.log'" />
+<layout class="org.apache.log4j.PatternLayout">
+<param name="ConversionPattern"
+value="[%d{MMdd HH:mm:ss SSS\} %-5p] [%t] %c{3\} - %m%n" />
+</layout>
+</appender>
+
+<!-- <appender name="imuAppender" class="org.apache.log4j.DailyRollingFileAppender">
+<param name="File" value="${log4j.path}/logs/push.log" />
+<param name="DatePattern" value="'.'yyyy-MM-dd'.log'" />
+<layout class="org.apache.log4j.PatternLayout">
+<param name="ConversionPattern"
+value="[%d{MMdd HH:mm:ss SSS\} %-5p] [%t] %c{3\} - %m%n" />
+</layout>
+</appender> -->
+
+<appender name="dbAppender" class="org.apache.log4j.DailyRollingFileAppender">
+<param name="File" value="E:\log/project1/db.log" />
+<param name="DatePattern" value="'.'yyyy-MM-dd'.log'" />
+<layout class="org.apache.log4j.PatternLayout">
+<param name="ConversionPattern"
+value="[%d{MMdd HH:mm:ss SSS\} %-5p] [%t] %c{3\} - %m%n" />
+</layout>
+</appender>
+<!-- 
+<appender name="utilAppender" class="org.apache.log4j.DailyRollingFileAppender">
+<param name="File" value="${log4j.path}/logs/util.log" />
+<param name="DatePattern" value="'.'yyyy-MM-dd'.log'" />
+<layout class="org.apache.log4j.PatternLayout">
+<param name="ConversionPattern"
+value="[%d{MMdd HH:mm:ss SSS\} %-5p] [%t] %c{3\} - %m%n" />
+</layout>
+</appender>
+ -->
+<!--  
+<appender name="imAppender" class="org.apache.log4j.DailyRollingFileAppender">
+<param name="File" value="${log4j.path}/logs/im.log" />
+<param name="DatePattern" value="'.'yyyy-MM-dd'.log'" />
+<layout class="org.apache.log4j.PatternLayout">
+<param name="ConversionPattern"
+value="[%d{MMdd HH:mm:ss SSS\} %-5p] [%t] %c{3\} - %m%n" />
+</layout>
+</appender>
+-->
+
+<!-- 任务处理程序，设置输出的方式 -->
+<logger name="com.ernestproject" additivity="false">
+<level value="debug" />
+<appender-ref ref="cmd"/>
+<appender-ref ref="allAppender" />
+</logger>
+
+<logger name="org.hibernate" additivity="false">
+<level value="debug" />
+<appender-ref ref="dbAppender" />
+</logger>
+
+<logger name="com.mysql" additivity="false">
+<level value="debug" />
+<appender-ref ref="dbAppender" />
+</logger>
+
+<!-- 全局输出的方式 -->
+<root>
+<priority value="debug" />
+<!--<appender-ref ref="cmd" />-->
+<appender-ref ref="allAppender" />
+</root>
+
+</log4j:configuration>

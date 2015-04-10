@@ -1,0 +1,144 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:cache="http://www.springframework.org/schema/cache"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+	http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.2.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+	http://www.springframework.org/schema/aop 
+	http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+	http://www.springframework.org/schema/cache   
+	http://www.springframework.org/schema/cache/spring-cache.xsd"
+	default-lazy-init="false">
+
+	<context:component-scan base-package="com.vd"></context:component-scan>
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>/WEB-INF/config/jdbc.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	
+	
+	<bean id="dataSource" class="com.jolbox.bonecp.BoneCPDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="${jdbc.driverClassName}" />
+		<property name="jdbcUrl" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<!-- 连接的空闲存活时间，当连接空闲时间大于该阀值时，清除该连接 -->
+		<property name="idleMaxAge" value="240" />
+		<!-- 每个分区含有的最大连接数 -->
+		<property name="maxConnectionsPerPartition" value="100" />
+		<!-- 每个分区含有的最小连接数 -->
+		<property name="minConnectionsPerPartition" value="30" />
+		<!-- 分区数量 -->
+		<property name="partitionCount" value="3" />
+		<!-- 每次新增连接的数量 -->
+		<property name="acquireIncrement" value="5" />
+		<!-- 语句缓存个数 -->
+		<property name="statementsCacheSize" value="50" />
+		<!-- 连接池助手线程数量，可设置为0，该参数会降低运行速度，但程序有大量连接时，有助于提升高并发程序的性能 -->
+		<property name="releaseHelperThreads" value="3" />
+		<!-- 语句助手线程数，可设置为0，该参数会降低运行速度，但程序有大量的查询语句时，有助于提升高并发程序的性能 -->
+		<property name="statementReleaseHelperThreads" value="3" />
+		<!-- 测试连接有效性的间隔时间，单位分钟 -->
+		<property name="idleConnectionTestPeriod" value="60" />
+		<!-- 连接测试语句 -->
+		<property name="connectionTestStatement" value="select 1 from dual" />
+		<!-- 连接超时时间，单位毫秒 -->
+		<property name="connectionTimeout" value="10000" />
+	</bean>
+	
+
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="packagesToScan">
+			<list>
+				<value>com.vd.entity</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+
+
+	<context:annotation-config />
+	<!-- 支持 @AspectJ -->
+	<aop:aspectj-autoproxy />
+
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+
+	<bean id="transactionInterceptor"
+		class="org.springframework.transaction.interceptor.TransactionInterceptor">
+		<property name="transactionManager">
+			<ref bean="transactionManager" />
+		</property>
+		<!-- 配置事务属性 -->
+		<property name="transactionAttributes">
+			<props>
+				<prop key="delete*">PROPAGATION_REQUIRED</prop>
+				<prop key="add*">PROPAGATION_REQUIRED</prop>
+				<prop key="update*">PROPAGATION_REQUIRED</prop>
+				<prop key="save*">PROPAGATION_REQUIRED</prop>
+				<prop key="find*">PROPAGATION_REQUIRED,readOnly</prop>
+				<prop key="get*">PROPAGATION_REQUIRED,readOnly</prop>
+				<prop key="*">PROPAGATION_REQUIRED</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- spring mvc配置jackson -->
+	<bean
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<bean
+					class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter" />
+				<bean
+					class="org.springframework.http.converter.StringHttpMessageConverter">
+					<property name="supportedMediaTypes">
+						<list>
+							<value>text/plain; charset=UTF-8</value>
+						</list>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="filePathGenerator" class="com.vd.util.FilePathGenerator">
+		<property name="basePath" value="E:\eclipse\workplace_kepler\project1\src\main\webapp\" />
+		<property name="slash" value="/" />
+		<property name="baseUrl" value="/project1/"/>
+	</bean>
+
+	<bean id="loginUtil" class="com.vd.util.LoginUtil">
+		<property name="username" value="admin" />   
+		<property name="password" value="admin" />     
+	</bean>
+
+
+
+	
+
+</beans>
